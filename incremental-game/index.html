@@ -1,0 +1,104 @@
+<html>
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:700">
+</head>
+<body>
+    <style>
+        body {
+            background-color: #060646; /* Dark blue background */
+            color: #555555; /* Text color is white */
+            font-family: 'Ubuntu', sans-serif; /* Use Ubuntu font, fall back to a generic sans-serif font */
+            font-weight: 700; /* Set font weight to 700 for Ubuntu Bold */
+        }
+    
+        button {
+            background-color: #00426e; /* Background color for buttons (light blue) */
+            color: lightslategray; /* Text color for buttons is white */
+            font-weight: 700; /* Set font weight to 700 for button text */
+            padding: 10px 20px; /* Adjust padding for buttons as needed */
+            border-radius: 10px;
+            border: none; /* Remove button borders if desired */
+            cursor: pointer; /* Add a pointer cursor for buttons */
+        }
+    </style>    
+    
+    <title>Incremental</title>
+    <h1>Number: <span class="counter">0</span></h1>
+    <button id="increaseIncrement">Increase Increment By <span class="incrementnumber">1</span>. Cost: <span class="incrementcost">3</span></button>
+    <button id="decreaseInterval">Decrease 5 Milliseconds From The Counting Interval. Cost: <span class="decreasetimecost">5</span></button>
+    <button id="rebirth" disabled>Rebirth</button>
+    <h2>Rebirths: <span class="rebirths">0</span></h2>
+    <script>
+        let counterValue = 0;
+        let incrementValue = 1;
+        let incrementCost = 3;
+        let intervalDuration = 1000; // Default interval duration is 1000ms
+        let decreaseTimeCost = 5;
+        let rebirths = 0;
+        const rebirthCost = 1000000; // 1 Million
+
+        const counterElement = document.querySelector('.counter');
+        const incrementNumberElement = document.querySelector('.incrementnumber');
+        const incrementCostElement = document.querySelector('.incrementcost');
+        const decreaseTimeCostElement = document.querySelector('.decreasetimecost');
+        const rebirthsElement = document.querySelector('.rebirths');
+        const increaseIncrementButton = document.getElementById('increaseIncrement');
+        const decreaseIntervalButton = document.getElementById('decreaseInterval');
+        const rebirthButton = document.getElementById('rebirth');
+
+        increaseIncrementButton.addEventListener('click', () => {
+            if (counterValue >= incrementCost) {
+                counterValue -= incrementCost;
+                incrementValue += 1;
+                incrementCost += 3;
+                updateDisplay();
+            }
+        });
+
+        decreaseIntervalButton.addEventListener('click', () => {
+            if (counterValue >= decreaseTimeCost) {
+                counterValue -= decreaseTimeCost;
+                intervalDuration -= 5;
+                updateDisplay();
+                resetCounterInterval();
+            }
+        });
+
+        rebirthButton.addEventListener('click', () => {
+            if (counterValue >= rebirthCost) {
+                counterValue = 0; // Reset the counter value to 0
+                incrementValue = 1
+                intervalDuration = 1000
+                incrementCost = 3
+                incrementValue = (incrementValue + rebirths + 1);
+                intervalDuration -= (rebirths + 1) * 5;
+                rebirths++;
+                updateDisplay();
+                resetCounterInterval();
+            }
+        });
+
+
+        function updateDisplay() {
+            counterElement.textContent = counterValue;
+            incrementNumberElement.textContent = incrementValue;
+            incrementCostElement.textContent = incrementCost;
+            decreaseTimeCostElement.textContent = decreaseTimeCost;
+            rebirthsElement.textContent = rebirths;
+            rebirthButton.disabled = counterValue < rebirthCost;
+        }
+
+        function resetCounterInterval() {
+            clearInterval(counterInterval);
+            counterInterval = setInterval(incrementNumber, intervalDuration);
+        }
+
+        function incrementNumber() {
+            counterValue += incrementValue;
+            counterElement.textContent = counterValue;
+        }
+
+        let counterInterval = setInterval(incrementNumber, intervalDuration);
+    </script>
+</body>
+</html>
