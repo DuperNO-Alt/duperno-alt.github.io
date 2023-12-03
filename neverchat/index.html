@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel=""/>
+    <title>Chat App</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap');
+        * {
+            font-family: 'Ubuntu', sans-serif;
+            font-weight: 700;
+            border-radius: 5px;
+        }
+        button {
+            background-color: teal;
+            color: white;
+        }
+        input {
+            background-color: aquamarine;
+            color: black
+        }
+    </style>
+</head>
+<body bgcolor="003366">
+
+    <div id="chat-container">
+        <ul id="messages"></ul>
+        <input type="text" id="message-input" placeholder="Type your message..." onkeypress="sendMessage(event)">
+        <button id="send-button" onclick="sendMessage()">Send</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.1/socket.io.js"></script>
+    <script>
+        const socket = io('https://jsienkieappsocket.glitch.me'); // Change to your Glitch app URL
+
+        function sendMessage(event) {
+            if (!event || event.key === 'Enter') {
+                const messageInput = document.getElementById('message-input');
+                const messagesList = document.getElementById('messages');
+
+                const messageText = messageInput.value.trim();
+                if (messageText !== '') {
+                    const messageItem = document.createElement('li');
+                    messageItem.textContent = messageText;
+                    messagesList.appendChild(messageItem);
+
+                    // Emit the message to the server
+                    socket.emit('message', messageText);
+
+                    // Clear the input field
+                    messageInput.value = '';
+
+                    // Scroll to the bottom of the messages list
+                    messagesList.scrollTop = messagesList.scrollHeight;
+                }
+            }
+        }
+
+        // Listen for messages from the server
+        socket.on('message', (message) => {
+            const messagesList = document.getElementById('messages');
+            const messageItem = document.createElement('li');
+            messageItem.textContent = message;
+            messagesList.appendChild(messageItem);
+
+            // Scroll to the bottom of the messages list
+            messagesList.scrollTop = messagesList.scrollHeight;
+        });
+    </script>
+</body>
+</html>
