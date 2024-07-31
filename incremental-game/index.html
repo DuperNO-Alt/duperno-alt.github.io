@@ -22,10 +22,11 @@
         }
     </style>    
     
-    <title>Incremental</title>
+    <title>Incremental Idle Game</title>
     <h1>Number: <span class="counter">0</span></h1>
     <button id="increaseIncrement">Increase Increment By <span class="incrementnumber">1</span>. Cost: <span class="incrementcost">3</span></button>
     <button id="decreaseInterval">Decrease 5 Milliseconds From The Counting Interval. Cost: <span class="decreasetimecost">5</span></button>
+    <button id="decreaseBase">Decrease Base (Currently: <span class="basenumber">10</span>). Cost: 5 Rebirths</button>
     <button id="rebirth" disabled>Rebirth</button>
     <h2>Rebirths: <span class="rebirths">0</span></h2>
     <script>
@@ -36,6 +37,7 @@
         let decreaseTimeCost = 5;
         let rebirths = 0;
         const rebirthCost = 1000000; // 1 Million
+        let baseValue = 10; // Default base value
 
         const counterElement = document.querySelector('.counter');
         const incrementNumberElement = document.querySelector('.incrementnumber');
@@ -44,7 +46,12 @@
         const rebirthsElement = document.querySelector('.rebirths');
         const increaseIncrementButton = document.getElementById('increaseIncrement');
         const decreaseIntervalButton = document.getElementById('decreaseInterval');
+        const decreaseBaseButton = document.getElementById('decreaseBase');
         const rebirthButton = document.getElementById('rebirth');
+        const baseNumberElement = document.querySelector('.basenumber');
+
+        // Load saved game state from localStorage
+        loadGameState();
 
         increaseIncrementButton.addEventListener('click', () => {
             if (counterValue >= incrementCost) {
@@ -52,6 +59,7 @@
                 incrementValue += 1;
                 incrementCost += 3;
                 updateDisplay();
+                saveGameState();
             }
         });
 
@@ -61,23 +69,33 @@
                 intervalDuration -= 5;
                 updateDisplay();
                 resetCounterInterval();
+                saveGameState();
+            }
+        });
+
+        decreaseBaseButton.addEventListener('click', () => {
+            if (rebirths >= 5) {
+                rebirths -= 5;
+                baseValue -= 1;
+                updateDisplay();
+                saveGameState();
             }
         });
 
         rebirthButton.addEventListener('click', () => {
             if (counterValue >= rebirthCost) {
                 counterValue = 0; // Reset the counter value to 0
-                incrementValue = 1
-                intervalDuration = 1000
-                incrementCost = 3
+                incrementValue = 1;
+                intervalDuration = 1000;
+                incrementCost = 3;
                 incrementValue = (incrementValue + rebirths + 1);
                 intervalDuration -= (rebirths + 1) * 5;
                 rebirths++;
                 updateDisplay();
                 resetCounterInterval();
+                saveGameState();
             }
         });
-
 
         function updateDisplay() {
             counterElement.textContent = counterValue;
@@ -85,6 +103,7 @@
             incrementCostElement.textContent = incrementCost;
             decreaseTimeCostElement.textContent = decreaseTimeCost;
             rebirthsElement.textContent = rebirths;
+            baseNumberElement.textContent = baseValue;
             rebirthButton.disabled = counterValue < rebirthCost;
         }
 
@@ -96,6 +115,46 @@
         function incrementNumber() {
             counterValue += incrementValue;
             counterElement.textContent = counterValue;
+            checkForBaseSuccess();
+            saveGameState();
+        }
+
+        function checkForBaseSuccess() {
+            if (counterValue >= baseValue * Math.pow(10, Math.floor(Math.log10(counterValue)))) {
+                counterValue = Math.pow(10, Math.ceil(Math.log10(counterValue)));
+                updateDisplay();
+            }
+        }
+
+        function saveGameState() {
+            const gameState = {
+                counterValue,
+                incrementValue,
+                incrementCost,
+                intervalDuration,
+                decreaseTimeCost,
+                rebirths,
+                baseValue,
+                lastSave: Date.now()
+            };
+            localStorage.setItem('incrementalGameState', JSON.stringify(gameState));
+        }
+
+        function loadGameState() {
+            const savedState = JSON.parse(localStorage.getItem('incrementalGameState'));
+            if (savedState) {
+                counterValue = savedState.counterValue;
+                incrementValue = savedState.incrementValue;
+                incrementCost = savedState.incrementCost;
+                intervalDuration = savedState.intervalDuration;
+                decreaseTimeCost = savedState.decreaseTimeCost;
+                rebirths = savedState.rebirths;
+                baseValue = savedState.baseValue;
+                const elapsedTime = (Date.now() - savedState.lastSave) / 1000;
+                counterValue += Math.floor(elapsedTime / intervalDuration) * incrementValue;
+                updateDisplay();
+                resetCounterInterval();
+            }
         }
 
         let counterInterval = setInterval(incrementNumber, intervalDuration);
